@@ -1,0 +1,47 @@
+API‑Dokumentation (Version1.0 – Stand:19.April2025)
+===============================================================
+
+1) EINLEITUNG
+-------------
+Diese REST‑API bietet zwei Endpunkte zum Abrufen freier Termin‑Slots
+und zum Buchen eines Termins. Implementiert mit Node.js (Express)
+und SQLite.
+
+
+2) ENDPOINTS
+------------
+GET  /sap/slots
+    Liefert alle Termine, bei denen email IS NULL.
+    Antwort(Beispiel):
+        [
+          { "id": 12,
+            "slot_date": "2025-05-06",
+            "start_time": "09:00",
+            "end_time": "09:30" }
+        ]
+
+POST /sap/book
+    Bucht einen Termin.
+    Request‑Body:
+        { "id": 12,
+          "email": "anna.mueller@example.org" }
+
+    Mögliche Antworten:
+        200 OK         Termin erfolgreich gebucht
+        400 BadRequest Ungültige/fehlende Felder
+        404 NotFound   Slot existiert nicht
+        409 Conflict   Slot bereits gebucht
+        500 Error      interner Fehler
+
+3) DATENBANKSCHEMA
+------------------
+CREATE TABLE appointment (
+  id         INTEGER PRIMARY KEY,
+  slot_date  TEXT NOT NULL, -- YYYY-MM-DD
+  start_time TEXT NOT NULL, -- HH:MM
+  end_time   TEXT NOT NULL, -- HH:MM
+  email      TEXT           -- NULL = frei
+);
+
+
+
