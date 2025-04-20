@@ -11,9 +11,9 @@ const db = new sqlite3.Database(DB_PATH,
     sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
     (err) => {
         if (err) {
-            console.error('❌  DB‑Verbindungsfehler:', err.message);
+            console.error(' DB‑Verbindungsfehler:', err.message);
         } else {
-            console.log('📒  SQLite‑Datenbank verbunden');
+            console.log(' SQLite‑Datenbank verbunden');
         }
     }
 );
