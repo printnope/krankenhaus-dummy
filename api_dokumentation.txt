@@ -33,6 +33,20 @@ POST /sap/book
         409 Conflict   Slot bereits gebucht
         500 Error      interner Fehler
 
+
+POST /sap/cancel
+    Storniert einen Termin (setzt email auf NULL)
+    Request‑Body:
+        { "start_time": "13:30",
+          "email": "anna.mueller@example.org" }
+
+
+    Mögliche Antworten:
+        200 OK Termin erfolgreich storniert
+        400 BadRequest Ungültige/fehlende Felder
+        404 NotFound Kein passender Termin für Stornierung
+        500 Error interner Fehler
+
 3) DATENBANKSCHEMA
 ------------------
 CREATE TABLE appointment (
