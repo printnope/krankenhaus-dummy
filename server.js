@@ -3,7 +3,7 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 const DB_PATH     = path.join(__dirname, 'booking.db');
-const PORT        = process.env.PORT || 3000;
+const PORT        = 3000;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 
@@ -21,7 +21,13 @@ const db = new sqlite3.Database(DB_PATH,
 const app = express();
 app.use(express.json());
 
+/*commentar stefan
+funktion verifyToken schreiben und dann entweder mit
+app.use(verifyToken) global oder jeweils einzeln app.use('beispel', verifyToken)
+*/
+
 app.get('/sap/slots', (req, res) => {
+
     const sql = `SELECT id, slot_date, start_time, end_time
                FROM   appointment
                WHERE  email IS NULL
