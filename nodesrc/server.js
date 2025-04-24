@@ -67,7 +67,7 @@ app.post('/sap/book', (req, res) => {
 
 
 app.post('/sap/cancel', (req, res) => {
-    const { start_time, email } = req.body || {};
+    const { start_time, email, slot_date } = req.body || {};
 
 
     if (!/^\d{2}:\d{2}$/.test(start_time || '') || !EMAIL_REGEX.test(email || '')) {
@@ -76,9 +76,9 @@ app.post('/sap/cancel', (req, res) => {
 
     const sql = `UPDATE appointment
                SET    email = NULL
-               WHERE  start_time = ? AND email = ?`;
+               WHERE  start_time = ? AND email = ? AND slot_date = ?`;
 
-    db.run(sql, [start_time, email], function (err) {
+    db.run(sql, [start_time, email, slot_date], function (err) {
         if (err) return res.status(500).json({ error: err.message });
 
         if (this.changes === 0) {

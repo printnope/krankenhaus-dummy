@@ -1,13 +1,6 @@
 API‑Dokumentation (Version1.0 – Stand:19.April2025)
 ===============================================================
 
-1) EINLEITUNG
--------------
-Diese REST‑API bietet zwei Endpunkte zum Abrufen freier Termin‑Slots
-und zum Buchen eines Termins. Implementiert mit Node.js (Express)
-und SQLite.
-
-
 2) ENDPOINTS
 ------------
 GET  /sap/slots
@@ -38,7 +31,9 @@ POST /sap/cancel
     Storniert einen Termin (setzt email auf NULL)
     Request‑Body:
         { "start_time": "13:30",
-          "email": "anna.mueller@example.org" }
+          "email": "anna.mueller@example.org"
+          "slot_date": "2025-04-21"
+          }
 
 
     Mögliche Antworten:
