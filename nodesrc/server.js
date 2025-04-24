@@ -26,6 +26,11 @@ funktion verifyToken schreiben und dann entweder mit
 app.use(verifyToken) global oder jeweils einzeln app.use('beispel', verifyToken)
 */
 
+app.get('/test', (req, res) => {
+    process.env
+    res.json(process.env.PATHTODATABASE);
+});
+
 app.get('/sap/slots', (req, res) => {
 
     const sql = `SELECT id, slot_date, start_time, end_time
