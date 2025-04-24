@@ -15,16 +15,28 @@ services:
 #    command: "npm start"
 
   node:
-    image: "node:23"
-    user: "node"
-    working_dir: /nodesrc
-    #working_dir: /home/stefan/Documents/andre_krankenhaus-dummy/nodesrc/package.json
-    environment:
-      - NODE_ENV=production
+    #image: "node:23"
+    build:
+      context: ./docker/node
+    #user: "node"
+    #working_dir: /home/node/app
+    working_dir: /node
+
+#prüfen ob fehler mit volume zusammenhängt
     volumes:
-      - ./nodesrc:/nodesrc
+      - ./nodesrc:/node
     expose:
       - "3000"
     ports: # use if it is necessary to expose the container to the host machine
       - "3000:3000"
-    command: "node server.js"
+    #command: "npm install -g"
+    command: "nodemon --env-file=.env server.js"
+
+  nginx:
+    build:
+      context: ./docker/nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/conf:/etc/nginx/conf.d/default.conf
+
