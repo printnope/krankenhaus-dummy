@@ -1,13 +1,11 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
 
-const DB_PATH     = path.join(__dirname, 'booking.db');
-const PORT        = 3000;
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 
-const db = new sqlite3.Database(DB_PATH,
+const db = new sqlite3.Database(process.env.PATHTODATABASE,
     sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
     (err) => {
         if (err) {
@@ -95,4 +93,4 @@ app.post('/sap/cancel', (req, res) => {
 app.use((req, res) => res.status(404).json({ error: 'Endpoint nicht gefunden' }));
 
 
-app.listen(PORT, () => console.log(`Server läuft auf http://localhost:${PORT}`));
+app.listen(process.env.PORT, () => console.log(`Server läuft auf http://localhost:${process.env.PORT}`));
