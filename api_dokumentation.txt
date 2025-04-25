@@ -31,7 +31,7 @@ POST /sap/cancel
     Storniert einen Termin (setzt email auf NULL)
     Request‑Body:
         { "start_time": "13:30",
-          "email": "anna.mueller@example.org"
+          "email": "anna.mueller@example.org",
           "slot_date": "2025-04-21"
           }
 
