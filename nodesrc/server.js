@@ -1,7 +1,7 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const SLOT_REGEX = /^\d{2}:\d{2}$/;
+const SLOT_TIME_REGEX = /^\d{2}:\d{2}$/;
 
 
 const db = new sqlite3.Database(process.env.PATHTODATABASE,
@@ -71,7 +71,7 @@ app.post('/sap/cancel', (req, res) => {
     const { start_time, email, slot_date } = req.body || {};
 
 
-    if (!SLOT_REGEX.test(start_time || '') || !EMAIL_REGEX.test(email || '')) {
+    if (!SLOT_TIME_REGEX.test(start_time || '') || !EMAIL_REGEX.test(email || '')) {
         return res.status(400).json({ error: 'start_time (HH:MM) oder gültige email erforderlich' });
     }
 
