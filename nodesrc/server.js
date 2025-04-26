@@ -27,8 +27,7 @@ app.use(verifyToken) global oder jeweils einzeln app.use('beispel', verifyToken)
 */
 
 app.get('/test', (req, res) => {
-    process.env
-    res.json(process.env.PATHTODATABASE);
+    res.json('hello world - krankenhaus app');
 });
 
 app.get('/sap/slots', (req, res) => {
