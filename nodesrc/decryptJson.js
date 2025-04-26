@@ -18,7 +18,7 @@ function decryptJSON(encryptedData, privateKeyPem) {
 
     // Zusammenbauen des neuen Objekts
     return {
-        dec: decCode,
+        dec: decCode, // jetzt auch im Klartext decCode und id müssen gleich sein
         id: dataObj.id,
         email: dataObj.email
     };

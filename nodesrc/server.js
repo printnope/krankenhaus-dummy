@@ -21,6 +21,7 @@ const db = new sqlite3.Database(process.env.PATHTODATABASE,
 app.use(express.json());
 app.use(verifyToken);
 
+
 app.get('/test', (req, res) => {
     process.env
     res.json(process.env.PATHTODATABASE);
