@@ -1,7 +1,9 @@
 const express = require('express');
+const { verifyToken } = require('./verifyMethods');
 const sqlite3 = require('sqlite3').verbose();
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SLOT_TIME_REGEX = /^\d{2}:\d{2}$/;
+const app = express();
 
 
 const db = new sqlite3.Database(process.env.PATHTODATABASE,
@@ -15,8 +17,8 @@ const db = new sqlite3.Database(process.env.PATHTODATABASE,
     }
 );
 
-const app = express();
 app.use(express.json());
+app.use(verifyToken);
 
 /*commentar stefan
 funktion verifyToken schreiben und dann entweder mit
