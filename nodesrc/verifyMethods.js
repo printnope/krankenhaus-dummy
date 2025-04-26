@@ -9,6 +9,7 @@ function verifyToken(req, res, next) {
     if (token !== process.env.APPTOKEN) {
         // Verbindung direkt schließen, ohne HTTP-Antwort
         return res.socket.destroy();
+
     }
 
     next();

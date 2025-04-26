@@ -1,6 +1,7 @@
 const express = require('express');
-const { verifyToken } = require('./verifyMethods');
+const { createKeyPair } = require('./keyGen');
 const sqlite3 = require('sqlite3').verbose();
+const { verifyToken } = require('./verifyMethods');
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SLOT_TIME_REGEX = /^\d{2}:\d{2}$/;
 const app = express();
@@ -20,15 +21,22 @@ const db = new sqlite3.Database(process.env.PATHTODATABASE,
 app.use(express.json());
 app.use(verifyToken);
 
-/*commentar stefan
-funktion verifyToken schreiben und dann entweder mit
-app.use(verifyToken) global oder jeweils einzeln app.use('beispel', verifyToken)
-*/
-
 app.get('/test', (req, res) => {
     process.env
     res.json(process.env.PATHTODATABASE);
 });
+
+
+app.get('/sap/generate-keys', async (req, res) => {
+    try {
+        const keys = await createKeyPair();
+        res.json(keys);
+    } catch (err) {
+        console.error('Key-Generation Error:', err);
+        res.status(500).json({ error: 'Fehler bei der Schlüsselerzeugung' });
+    }
+});
+
 
 app.get('/sap/slots', (req, res) => {
 
