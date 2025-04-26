@@ -1,13 +1,13 @@
 const express = require('express');
+const { createKeyPair } = require('./keyGen');
 const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-
-const DB_PATH     = path.join(__dirname, 'booking.db');
-const PORT        = 3000;
+const { verifyToken } = require('./verifyMethods');
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const SLOT_TIME_REGEX = /^\d{2}:\d{2}$/;
+const app = express();
 
 
-const db = new sqlite3.Database(DB_PATH,
+const db = new sqlite3.Database(process.env.PATHTODATABASE,
     sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
     (err) => {
         if (err) {
@@ -18,17 +18,25 @@ const db = new sqlite3.Database(DB_PATH,
     }
 );
 
-const app = express();
 app.use(express.json());
+app.use(verifyToken);
 
-/*commentar stefan
-funktion verifyToken schreiben und dann entweder mit
-app.use(verifyToken) global oder jeweils einzeln app.use('beispel', verifyToken)
-*/
 
 app.get('/test', (req, res) => {
     res.json('hello world - krankenhaus app');
 });
+
+
+app.get('/sap/generate-keys', async (req, res) => {
+    try {
+        const keys = await createKeyPair();
+        res.json(keys);
+    } catch (err) {
+        console.error('Key-Generation Error:', err);
+        res.status(500).json({ error: 'Fehler bei der Schlüsselerzeugung' });
+    }
+});
+
 
 app.get('/sap/slots', (req, res) => {
 
@@ -70,18 +78,18 @@ app.post('/sap/book', (req, res) => {
 
 
 app.post('/sap/cancel', (req, res) => {
-    const { start_time, email } = req.body || {};
+    const { start_time, email, slot_date } = req.body || {};
 
 
-    if (!/^\d{2}:\d{2}$/.test(start_time || '') || !EMAIL_REGEX.test(email || '')) {
-        return res.status(400).json({ error: 'start_time (HH:MM) und gültige email erforderlich' });
+    if (!SLOT_TIME_REGEX.test(start_time || '') || !EMAIL_REGEX.test(email || '')) {
+        return res.status(400).json({ error: 'start_time (HH:MM) oder gültige email erforderlich' });
     }
 
     const sql = `UPDATE appointment
                SET    email = NULL
-               WHERE  start_time = ? AND email = ?`;
+               WHERE  start_time = ? AND email = ? AND slot_date = ?`;
 
-    db.run(sql, [start_time, email], function (err) {
+    db.run(sql, [start_time, email, slot_date], function (err) {
         if (err) return res.status(500).json({ error: err.message });
 
         if (this.changes === 0) {
@@ -94,4 +102,4 @@ app.post('/sap/cancel', (req, res) => {
 app.use((req, res) => res.status(404).json({ error: 'Endpoint nicht gefunden' }));
 
 
-app.listen(PORT, () => console.log(`Server läuft auf http://localhost:${PORT}`));
+app.listen(process.env.PORT, () => console.log(`Server läuft auf http://localhost:${process.env.PORT}`));
