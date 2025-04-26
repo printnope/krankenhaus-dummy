@@ -2,6 +2,7 @@ const express = require('express');
 const { createKeyPair } = require('./keyGen');
 const sqlite3 = require('sqlite3').verbose();
 const { verifyToken } = require('./verifyMethods');
+const {decryptJson} = require('./decryptJson');
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SLOT_TIME_REGEX = /^\d{2}:\d{2}$/;
 const app = express();
@@ -36,6 +37,14 @@ app.get('/sap/generate-keys', async (req, res) => {
         console.error('Key-Generation Error:', err);
         res.status(500).json({ error: 'Fehler bei der Schlüsselerzeugung' });
     }
+});
+
+app.get('/test/decryptJson', (req, res) => {
+
+
+    const { encryptedData, id } = req.body || {};
+
+
 });
 
 
