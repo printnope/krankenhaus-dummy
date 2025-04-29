@@ -24,8 +24,8 @@ app.use(verifyToken);
 
 
 app.get('/test', (req, res) => {
-    process.env
-    res.json(process.env.PATHTODATABASE);
+
+    res.json("hello world kh app");
 });
 
 

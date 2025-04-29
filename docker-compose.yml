@@ -14,7 +14,7 @@ services:
 #      - ./:/nodesrc
 #    command: "npm start"
 
-  node:
+  khz-node:
     #image: "node:23"
     build:
       context: ./docker/node
@@ -32,11 +32,21 @@ services:
     #command: "npm install -g"
     command: "nodemon --env-file=.env server.js"
 
-  nginx:
+    networks:
+      - krankenhaus-vermittlung
+
+  khz-nginx:
     build:
       context: ./docker/nginx
     ports:
       - "80:80"
     volumes:
       - ./docker/nginx/conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - krankenhaus-vermittlung
 
+
+
+networks:
+  krankenhaus-vermittlung:
+    external: true
