@@ -1,4 +1,4 @@
-const express = require('express'); // zusätzliche Security-Header
+const express = require('express');
 const { createKeyPair } = require('./keyGen');
 const sqlite3 = require('sqlite3').verbose();
 const { verifyToken } = require('./verifyMethods');
@@ -10,22 +10,8 @@ const app = express();
 
 
 
-const fs   = require('fs');
-const path = require('path');
-
-const dbRelative = process.env.PATHTODATABASE;
-const dbAbsolute = path.resolve(__dirname, dbRelative);
-console.log('>> DB-Relative:', dbRelative);
-console.log('>> DB-Absolute:', dbAbsolute);
-console.log('>> Existiert:', fs.existsSync(dbAbsolute));
-if (fs.existsSync(dbAbsolute)) {
-    const st = fs.statSync(dbAbsolute);
-    console.log('>> Größe:', st.size, 'Bytes');
-}
-
-
 app.use(express.json({ limit: '5kb' }));             // begrenzt Payload-Größe
-app.use(verifyToken);
+ app.use(verifyToken);
 
 // SQLite-Verbindung
 const db = new sqlite3.Database(
@@ -145,8 +131,9 @@ app.post('/sap/cancel', (req, res) => {
 app.use((req, res) => res.status(404).json({ error: 'Endpoint nicht gefunden' }));
 
 // Server starten
-app.listen(process.env.PORT, () =>
-    console.log(`Server läuft auf http://localhost:${process.env.PORT}`),
-    console.log(`Using DB file: ${ process.env.PATHTODATABASE}`)
+    app.listen(process.env.PORT, () =>
+            console.log(`Server läuft auf http://localhost:${process.env.PORT}`),
 
-);
+    );
+
+

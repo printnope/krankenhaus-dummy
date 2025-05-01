@@ -1,28 +1,29 @@
+
 const crypto = require('crypto');
 
 function encrypt(data, publicKeyPem) {
-    try {
-        if (!publicKeyPem) {
-            throw new Error('Öffentlicher Schlüssel ist erforderlich.');
-        }
-
-        const jsonString = JSON.stringify(data);
-        const bufferData = Buffer.from(jsonString, 'utf8');
-
-        const encryptedBuffer = crypto.publicEncrypt(
-            {
-                key: publicKeyPem,
-                padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-                oaepHash: 'sha256',
-            },
-            bufferData
-        );
-
-        return encryptedBuffer.toString('base64');
-    } catch (error) {
-        console.error('Fehler bei der Verschlüsselung:', error.message);
-        throw new Error('Verschlüsselung fehlgeschlagen.');
+    if (!publicKeyPem) {
+        throw new Error('Öffentlicher Schlüssel ist erforderlich.');
     }
+
+    // 1) Objekt → JSON → Buffer
+    const bufferData = Buffer.from(JSON.stringify(data), 'utf8');
+
+    // 2) RSA-OAEP Verschlüsselung
+    const encryptedBuffer = crypto.publicEncrypt(
+        {
+            key: publicKeyPem,
+            padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+            oaepHash: 'sha256',
+        },
+        bufferData
+    );
+
+    // 3) Buffer → Base64
+    const encryptedData = encryptedBuffer.toString('base64');
+
+    // 4) Objekt zurückgeben
+    return { encryptedData };
 }
 
 module.exports = encrypt;
