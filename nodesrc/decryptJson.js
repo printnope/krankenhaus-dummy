@@ -1,37 +1,35 @@
+// decryptJson.js
 const crypto = require('crypto');
 
 /**
- * Verschlüsselt ein JavaScript-Objekt mit RSA-OAEP und gibt ein Objekt mit dem Base64-codierten Cipher-Text zurück.
+ * Entschlüsselt einen Base64-kodierten Ciphertext, der mit RSA-OAEP/SHA-256 erzeugt wurde,
+ * und gibt das ursprüngliche JSON-Objekt zurück.
  *
- * @param {Object} data          – Klartext-Daten, z.B. { id: 123, email: "max@example.com" }
- * @param {string} publicKeyPem  – PEM-formatierter RSA-Public-Key als String
- * @returns {{ encryptedData: string }}
- *   – Objekt mit Feld `encryptedData`, das den verschlüsselten Base64-String enthält
- * @throws {Error} Wenn publicKeyPem fehlt oder Verschlüsselung fehlschlägt
+ * @param {string} encryptedBase64 – Base64-kodierter Ciphertext
+ * @returns {Object}               – Das entschlüsselte Objekt (z.B. { id, email })
+ * @throws {Error}                – Bei fehlendem Schlüssel oder Entschlüsselungsfehler
  */
-function encrypt(data, publicKeyPem) {
-    if (!publicKeyPem) {
-        throw new Error('Öffentlicher Schlüssel ist erforderlich.');
+function decryptJson(encryptedBase64) {
+    const privateKeyPem = process.env.PRIVATE_KEY;
+    if (!privateKeyPem) {
+        throw new Error('Privater Schlüssel nicht in der .env gefunden.');
     }
 
-    // 1) JSON-String → Buffer
-    const bufferData = Buffer.from(JSON.stringify(data), 'utf8');
+    // Base64 → Buffer
+    const buffer = Buffer.from(encryptedBase64, 'base64');
 
-    // 2) Buffer mit RSA-OAEP (SHA-256) verschlüsseln
-    const encryptedBuffer = crypto.publicEncrypt(
+    // RSA-OAEP Decryption mit SHA-256
+    const decryptedBuffer = crypto.privateDecrypt(
         {
-            key: publicKeyPem,
+            key: privateKeyPem,
             padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-            oaepHash: 'sha256',
+            oaepHash: 'sha256'
         },
-        bufferData
+        buffer
     );
 
-    // 3) Buffer → Base64-String
-    const encryptedData = encryptedBuffer.toString('base64');
-
-    // 4) Rückgabeobjekt mit verschlüsseltem Payload
-    return { encryptedData };
+    // Buffer → UTF-8 → JSON
+    return JSON.parse(decryptedBuffer.toString('utf8'));
 }
 
-module.exports = encrypt;
+module.exports = decryptJson;
