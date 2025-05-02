@@ -25,5 +25,3 @@ function encrypt(data, publicKeyPem) {
     // 4) Objekt zurückgeben
     return { encryptedData };
 }
-
-module.exports = encrypt;

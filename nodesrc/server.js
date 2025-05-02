@@ -1,3 +1,4 @@
+const cors = require('cors');
 const express = require('express');
 const { createKeyPair } = require('./keyGen');
 const sqlite3 = require('sqlite3').verbose();
@@ -12,6 +13,9 @@ const app = express();
 
 app.use(express.json({ limit: '5kb' }));             // begrenzt Payload-Größe
  app.use(verifyToken);
+app. use(cors());
+
+
 
 // SQLite-Verbindung
 const db = new sqlite3.Database(
