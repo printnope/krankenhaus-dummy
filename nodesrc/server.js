@@ -11,9 +11,9 @@ const app = express();
 
 
 
-app.use(express.json({ limit: '5kb' }));             // begrenzt Payload-Größe
- app.use(verifyToken);
-app. use(cors());
+app.use(express.json({ limit: '1kb' }));             // begrenzt Payload-Größe
+app.use(verifyToken);
+app.use(cors());
 
 
 
@@ -33,7 +33,7 @@ const db = new sqlite3.Database(
 
 
 // Health-Check
-app.get('/test', (req, res) => {
+app.get('api/test', (req, res) => {
     res.json('hello world kh app');
 });
 
@@ -69,7 +69,9 @@ app.get('/sap/slots', (req, res) => {
 
 // Termin buchen: Entgegennahme verschlüsselter Daten, Entschlüsselung, Validierung und Update
 app.post('/sap/book', (req, res) => {
+
     const { encryptedData } = req.body || {};
+
     if (!encryptedData) {
         return res.status(400).json({ error: 'Verschlüsselte Daten (encryptedData) erforderlich' });
     }
@@ -112,10 +114,27 @@ app.post('/sap/book', (req, res) => {
 
 // Termin stornieren
 app.post('/sap/cancel', (req, res) => {
-    const { start_time, email, slot_date } = req.body || {};
+
+    const { encryptedData } = req.body || {};
+
+    if (!encryptedData) {
+        return res.status(400).json({ error: 'Verschlüsselte Daten (encryptedData) erforderlich' });
+    }
+
+    let payload;
+    try {
+        payload = decryptJson(encryptedData);
+    } catch (err) {
+        console.error('Entschlüsselungsfehler:', err.message);
+        return res.status(400).json({ error: 'Entschlüsselung fehlgeschlagen' });
+    }
+
+
+    const { start_time, email, slot_date } = payload;
     if (!SLOT_TIME_REGEX.test(start_time || '') || !EMAIL_REGEX.test(email || '')) {
         return res.status(400).json({ error: 'start_time (HH:MM) und gültige email erforderlich' });
     }
+
 
     const sql = `
     UPDATE appointment
