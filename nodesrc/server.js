@@ -1,20 +1,16 @@
 const cors = require('cors');
 const express = require('express');
-const { createKeyPair } = require('./keyGen');
 const sqlite3 = require('sqlite3').verbose();
 const { verifyToken } = require('./verifyMethods');
 const decryptJson = require('./decryptJson');        // entschlüsselt Base64 → JSON
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SLOT_TIME_REGEX = /^\d{2}:\d{2}$/;
-
 const app = express();
-
 
 
 app.use(express.json({ limit: '1kb' }));             // begrenzt Payload-Größe
 app.use(verifyToken);
 app.use(cors());
-
 
 
 // SQLite-Verbindung
@@ -30,28 +26,6 @@ const db = new sqlite3.Database(
     }
 );
 
-
-
-// Health-Check
-app.get('api/test', (req, res) => {
-    res.json('hello world kh app');
-});
-
-// Schlüsselgenerierung für den Client
-app.get('/sap/generate-keys', async (req, res) => {
-    try {
-        const keys = await createKeyPair();
-        res.json(keys);
-    } catch (err) {
-        console.error('Key-Generation Error:', err);
-        res.status(500).json({ error: 'Fehler bei der Schlüsselerzeugung' });
-    }
-});
-
-// Leerer Test-Endpoint für decryptJson (optional zu befüllen)
-app.get('/test/decryptJson', (req, res) => {
-    res.status(204).end();
-});
 
 // freie Slots auslesen
 app.get('/sap/slots', (req, res) => {
