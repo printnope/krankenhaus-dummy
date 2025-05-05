@@ -42,7 +42,7 @@ app.get('/sap/slots', (req, res) => {
 });
 
 // Termin buchen: Entgegennahme verschlüsselter Daten, Entschlüsselung, Validierung und Update
-app.post('/sap/book', (req, res) => {
+app.post('/sap/booking', (req, res) => {
 
     const { encryptedData } = req.body || {};
 
