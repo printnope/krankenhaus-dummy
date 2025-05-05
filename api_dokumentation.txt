@@ -1,56 +1,90 @@
-API‑Dokumentation (Version1.0 – Stand:19.April2025)
-===============================================================
+API‑Dokumentation (Version 1.1 – Stand: 5. Mai 2025)
+====================================================
 
 2) ENDPOINTS
 ------------
-GET  /sap/slots
-    Liefert alle Termine, bei denen email IS NULL.
-    Antwort(Beispiel):
-        [
-          { "id": 12,
-            "slot_date": "2025-05-06",
-            "start_time": "09:00",
-            "end_time": "09:30" }
-        ]
 
-POST /sap/book
-    Bucht einen Termin.
-    Request‑Body:
-        { "id": 12,
-          "email": "anna.mueller@example.org" }
+GET /sap/slots
+--------------
+Liefert alle freien Termine (also Slots, bei denen `email IS NULL`).
 
-    Mögliche Antworten:
-        200 OK         Termin erfolgreich gebucht
-        400 BadRequest Ungültige/fehlende Felder
-        404 NotFound   Slot existiert nicht
-        409 Conflict   Slot bereits gebucht
-        500 Error      interner Fehler
+Antwort (Beispiel):
+[
+  {
+    "id": 12,
+    "slot_date": "2025-05-06",
+    "start_time": "09:00",
+    "end_time": "09:30"
+  }
+]
 
+---
+
+POST /sap/booking
+-----------------
+Bucht einen Termin. Die Daten müssen Base64-kodiert und verschlüsselt im Feld `encryptedData` übermittelt werden.
+
+Request-Body (Beispiel):
+{
+  "encryptedData": "eyJpZCI6MTIsImVtYWlsIjoiYW5uYS5tdWVsbGVyQGV4YW1wbGUub3JnIn0="
+}
+
+Nach der Entschlüsselung wird erwartet:
+{
+  "id": 12,
+  "email": "anna.mueller@example.org"
+}
+
+Mögliche Antworten:
+- 200 OK
+  → Termin erfolgreich gebucht
+- 400 Bad Request
+  → Fehlende oder ungültige Felder, fehlerhafte Entschlüsselung
+- 404 Not Found
+  → Slot-ID existiert nicht
+- 409 Conflict
+  → Termin bereits vergeben
+- 500 Internal Server Error
+  → Datenbankfehler oder interner Fehler
+
+---
 
 POST /sap/cancel
-    Storniert einen Termin (setzt email auf NULL)
-    Request‑Body:
-        { "start_time": "13:30",
-          "email": "anna.mueller@example.org",
-          "slot_date": "2025-04-21"
-          }
+----------------
+Storniert einen Termin (setzt `email` auf NULL).
+Auch hier müssen die Daten verschlüsselt im Feld `encryptedData` übermittelt werden.
 
+Request-Body (Beispiel):
+{
+  "encryptedData": "eyJzdGFydF90aW1lIjoiMTM6MzAiLCJlbWFpbCI6ImFubmEubXVlbGxlckBleGFtcGxlLm9yZyIsInNsb3RfZGF0ZSI6IjIwMjUtMDQtMjEifQ=="
+}
 
-    Mögliche Antworten:
-        200 OK Termin erfolgreich storniert
-        400 BadRequest Ungültige/fehlende Felder
-        404 NotFound Kein passender Termin für Stornierung
-        500 Error interner Fehler
+Nach der Entschlüsselung wird erwartet:
+{
+  "start_time": "13:30",
+  "email": "anna.mueller@example.org",
+  "slot_date": "2025-04-21"
+}
+
+Mögliche Antworten:
+- 200 OK
+  → Termin erfolgreich storniert
+- 400 Bad Request
+  → Fehlende oder ungültige Felder, fehlerhafte Entschlüsselung
+- 404 Not Found
+  → Kein passender Termin mit diesen Daten gefunden
+- 500 Internal Server Error
+  → Interner Fehler
+
+---
 
 3) DATENBANKSCHEMA
 ------------------
 CREATE TABLE appointment (
   id         INTEGER PRIMARY KEY,
-  slot_date  TEXT NOT NULL, -- YYYY-MM-DD
-  start_time TEXT NOT NULL, -- HH:MM
-  end_time   TEXT NOT NULL, -- HH:MM
-  email      TEXT           -- NULL = frei
+  slot_date  TEXT NOT NULL, -- Format: YYYY-MM-DD
+  start_time TEXT NOT NULL, -- Format: HH:MM
+  end_time   TEXT NOT NULL, -- Format: HH:MM
+  email      TEXT           -- NULL = Termin ist frei
 );
-
-
 
