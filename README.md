@@ -7,3 +7,4 @@
 2. npm install ausführen im Ordner nodesrc
 3. sudo docker network create krankenhaus-vermittlung
 4. sudo docker compose up --build
+
