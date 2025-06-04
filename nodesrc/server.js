@@ -42,7 +42,7 @@ app.get('/sap/slots', (req, res) => {
 });
 
 // Termin buchen: Entgegennahme verschlüsselter Daten, Entschlüsselung, Validierung und Update
-app.post('/sap/booking', (req, res) => {
+app.post('/sap/booking', async (req, res) => {
 
     const { encryptedData } = req.body || {};
 
@@ -52,7 +52,7 @@ app.post('/sap/booking', (req, res) => {
 
     let payload;
     try {
-        payload = decryptJson(encryptedData);
+        payload = await decryptJson(encryptedData);
     } catch (err) {
         console.error('Entschlüsselungsfehler:', err.message);
         return res.status(400).json({ error: 'Entschlüsselung fehlgeschlagen' });
@@ -87,7 +87,7 @@ app.post('/sap/booking', (req, res) => {
 });
 
 // Termin stornieren
-app.post('/sap/cancel', (req, res) => {
+app.post('/sap/cancel', async (req, res) => {
 
     const { encryptedData } = req.body || {};
 
@@ -97,7 +97,7 @@ app.post('/sap/cancel', (req, res) => {
 
     let payload;
     try {
-        payload = decryptJson(encryptedData);
+        payload = await decryptJson(encryptedData);
     } catch (err) {
         console.error('Entschlüsselungsfehler:', err.message);
         return res.status(400).json({ error: 'Entschlüsselung fehlgeschlagen' });

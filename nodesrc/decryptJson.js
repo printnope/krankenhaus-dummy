@@ -1,35 +1,77 @@
 // decryptJson.js
 const crypto = require('crypto');
+const { webcrypto } = require('crypto');
 
-/**
- * Entschlüsselt einen Base64-kodierten Ciphertext, der mit RSA-OAEP/SHA-256 erzeugt wurde,
- * und gibt das ursprüngliche JSON-Objekt zurück.
- *
- * @param {string} encryptedBase64 – Base64-kodierter Ciphertext
- * @returns {Object}               – Das entschlüsselte Objekt (z.B. { id, email })
- * @throws {Error}                – Bei fehlendem Schlüssel oder Entschlüsselungsfehler
- */
-function decryptJson(encryptedBase64) {
+const atob = (str) => Buffer.from(str, 'base64').toString('binary');
+const TextDecoder = require('util').TextDecoder;
+
+async function rsaDecrypt(encryptedData, pem) {
+    const b64 = pem.replace(/-----\w+ PRIVATE KEY-----|\s+/g, '');
+    if (!/^[A-Za-z0-9+/]+=*$/.test(b64))
+        throw new Error('Private Key enthält ungültige Zeichen');
+    const der = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    const key = await webcrypto.subtle.importKey(
+        'pkcs8',
+        der.buffer,
+        { name: 'RSA-OAEP', hash: 'SHA-256' },
+        false,
+        ['decrypt']
+    );
+
+    const data = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
+    try {
+        const decBuf = await webcrypto.subtle.decrypt({ name: 'RSA-OAEP' }, key, data);
+        return JSON.parse(new TextDecoder().decode(decBuf));
+    } catch (err) {
+        throw new Error('Fehler beim Entschlüsseln der Daten: ' + err);
+    }
+}
+
+async function aesDecrypt(encryptedData, aesKey) {
+    const data = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
+    const iv = data.slice(0, 12);           // Die ersten 12 Bytes sind das IV
+    const ciphertext = data.slice(12);      // Rest = verschlüsselte Nachricht
+
+    const keyArray = Uint8Array.from(atob(aesKey), c => c.charCodeAt(0));
+    if (keyArray.length !== 32) {
+        throw new Error('AES-Schlüssel muss 32 Bytes (256-bit) lang sein');
+    }
+
+    const cryptoKey = await webcrypto.subtle.importKey(
+        'raw',
+        keyArray.buffer,
+        { name: 'AES-GCM' },
+        false,
+        ['decrypt']
+    );
+
+    try {
+        const decBuf = await webcrypto.subtle.decrypt({ name: 'AES-GCM', iv }, cryptoKey, ciphertext);
+        return JSON.parse(new TextDecoder().decode(decBuf));
+    } catch (err) {
+        throw new Error('Fehler beim Entschlüsseln der Daten: ' + err);
+    }
+}
+
+async function hybridDecrypt(encryptedKey, encryptedData, rsaKey) {
+    const decryptedKey = await rsaDecrypt(encryptedKey, rsaKey);
+    const aesKey = decryptedKey.key;
+    return await aesDecrypt(encryptedData, aesKey);
+}
+
+
+async function decryptJson(data) {
     const privateKeyPem = process.env.PRIVATE_KEY;
     if (!privateKeyPem) {
         throw new Error('Privater Schlüssel nicht in der .env gefunden.');
     }
 
-    // Base64 → Buffer
-    const buffer = Buffer.from(encryptedBase64, 'base64');
-
-    // RSA-OAEP Decryption mit SHA-256
-    const decryptedBuffer = crypto.privateDecrypt(
-        {
-            key: privateKeyPem,
-            padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-            oaepHash: 'sha256'
-        },
-        buffer
-    );
-
-    // Buffer → UTF-8 → JSON
-    return JSON.parse(decryptedBuffer.toString('utf8'));
+    try {
+        const decryptedData = await hybridDecrypt(data.encryptedKey, data.encryptedData, privateKeyPem);
+        return decryptedData;
+    } catch (error) {
+        throw new Error(`Entschlüsselung fehlgeschlagen: ${error.message}`);
+    }
 }
 
 module.exports = decryptJson;
